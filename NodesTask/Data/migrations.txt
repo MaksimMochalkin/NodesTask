@@ -1,0 +1,4 @@
+add-migration Initial -context NodesApplicationDbContext -outputdir Data/ApplicationDb
+Update-Database -Context NodesApplicationDbContext
+Remove-Migration
+drop-database -context NodesApplicationDbContext

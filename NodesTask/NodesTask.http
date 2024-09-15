@@ -1,0 +1,6 @@
+@NodesTask_HostAddress = http://localhost:5101
+
+GET {{NodesTask_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
