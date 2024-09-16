@@ -3,7 +3,11 @@
     using Microsoft.AspNetCore.Mvc;
     using NodesTask.Data.Entities;
     using NodesTask.Interfaces;
+    using System.ComponentModel.DataAnnotations;
 
+    /// <summary>
+    /// Represents entire tree API
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class TreeController : ControllerBase
@@ -22,13 +26,9 @@
         /// <param name="treeName">The name of the tree</param>
         /// <returns>The entire tree structure</returns>
         [HttpPost("getTree")]
-        public async Task<IActionResult> GetTree([FromQuery] string treeName)
+        public async Task<IActionResult> GetTree(
+            [FromQuery][Required] string treeName)
         {
-            if (string.IsNullOrWhiteSpace(treeName))
-            {
-                return BadRequest("Tree name is required.");
-            }
-
             var tree = await _serviceManager.TreeService.GetTreeByNameAsync(treeName);
 
             if (tree == null)

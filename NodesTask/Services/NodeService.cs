@@ -15,13 +15,15 @@
             _context = context;
         }
 
-        public async Task<Tree> CreateNodeAsync(string treeName, Guid? parentNodeId, string nodeName)
+        public async Task<Tree> CreateNodeAsync(
+            string treeName,
+            Guid? parentNodeId,
+            string nodeName)
         {
             var tree = await _context.Trees.Include(t => t.Nodes).FirstOrDefaultAsync(t => t.TreeName == treeName);
             if (tree == null)
             {
-                tree = new Tree { TreeName = treeName, Nodes = new List<Node>() };
-                _context.Trees.Add(tree);
+                throw new SecureException("Tree did not find.");
             }
 
             var parentNode = parentNodeId.HasValue
@@ -45,7 +47,9 @@
             return tree;
         }
 
-        public async Task DeleteNodeAsync(string treeName, Guid nodeId)
+        public async Task DeleteNodeAsync(
+            string treeName,
+            Guid nodeId)
         {
             var node = await _context.Nodes.Include(n => n.Children).FirstOrDefaultAsync(n => n.Id == nodeId && n.Tree.TreeName == treeName);
 
@@ -63,7 +67,10 @@
             await _context.SaveChangesAsync();
         }
 
-        public async Task RenameNodeAsync(string treeName, Guid nodeId, string newNodeName)
+        public async Task RenameNodeAsync(
+            string treeName,
+            Guid nodeId,
+            string newNodeName)
         {
             var node = await _context.Nodes.Include(n => n.ParentNode).FirstOrDefaultAsync(n => n.Id == nodeId && n.Tree.TreeName == treeName);
 
@@ -79,11 +86,6 @@
 
             node.NodeName = newNodeName;
             await _context.SaveChangesAsync();
-        }
-
-        public async Task<Tree> GetTreeAsync(string treeName)
-        {
-            return await _context.Trees.Include(t => t.Nodes).FirstOrDefaultAsync(t => t.TreeName == treeName);
         }
     }
 }

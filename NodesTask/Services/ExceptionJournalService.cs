@@ -4,28 +4,38 @@
     using NodesTask.Data;
     using NodesTask.Data.Entities;
     using NodesTask.Interfaces;
+    using NodesTask.Models.Requests;
 
     public class ExceptionJournalService : IExceptionJournalService
     {
+        private readonly ISqlQueryBuilderService<ExceptionJournal> _sqlQueryBuilderService;
         private readonly NodesApplicationDbContext _context;
 
-        public ExceptionJournalService(NodesApplicationDbContext context)
+        public ExceptionJournalService(NodesApplicationDbContext context,
+            ISqlQueryBuilderService<ExceptionJournal> sqlQueryBuilderService)
         {
             _context = context;
+            _sqlQueryBuilderService = sqlQueryBuilderService;
         }
 
-        public async Task<IEnumerable<ExceptionJournal>> GetJournalEntriesAsync(int skip, int take, DateTime? from, DateTime? to, string search)
+        public async Task<IEnumerable<ExceptionJournal>> GetJournalEntriesAsync(int skip, int take, FilterParams filter)
         {
             var query = _context.ExceptionJournals.AsQueryable();
 
-            if (from.HasValue)
-                query = query.Where(e => e.Timestamp >= from.Value);
-            if (to.HasValue)
-                query = query.Where(e => e.Timestamp <= to.Value);
-            if (!string.IsNullOrEmpty(search))
-                query = query.Where(e => e.StackTrace.Contains(search) || e.QueryParams.Contains(search) || e.BodyParams.Contains(search));
+            if (filter.From != DateTime.MinValue && filter.To != DateTime.MinValue)
+            {
+                query = query.Where(e => e.Timestamp >= filter.From && e.Timestamp <= filter.To);
+            }
 
-            return await query.Skip(skip).Take(take).ToListAsync();
+            if (!string.IsNullOrEmpty(filter.Search))
+            {
+                query = _sqlQueryBuilderService.GenerateSqlQuery(query, filter.Search);
+            }
+
+            query = query.Skip(skip).Take(take);
+
+            var result = await query.ToListAsync();
+            return result;
         }
 
         public async Task<ExceptionJournal> GetJournalEntryByIdAsync(Guid id)

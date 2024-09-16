@@ -22,6 +22,7 @@ builder.Services.AddDbContext<NodesApplicationDbContext>(config =>
     config.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
 });
 
+//builder.Services.AddScoped(typeof(ISqlQueryBuilderService<>), typeof(SqlQueryBuilderService<>));
 builder.Services.AddScoped<IServiceManager, ServiceManager>();
 
 builder.Services.AddControllers()

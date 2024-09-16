@@ -1,6 +1,7 @@
 ﻿namespace NodesTask.Services
 {
     using NodesTask.Data;
+    using NodesTask.Data.Entities;
     using NodesTask.Interfaces;
 
     public class ServiceManager : IServiceManager
@@ -13,7 +14,7 @@
         {
             _treeService = new Lazy<ITreeService>(() => new TreeService(context));
             _nodeService = new Lazy<INodeService>(() => new NodeService(context));
-            _exceptionJournalService = new Lazy<IExceptionJournalService>(() => new ExceptionJournalService(context));
+            _exceptionJournalService = new Lazy<IExceptionJournalService>(() => new ExceptionJournalService(context, new SqlQueryBuilderService<ExceptionJournal>()));
         }
 
         public ITreeService TreeService => _treeService.Value;

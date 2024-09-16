@@ -3,7 +3,6 @@
     using System.Net;
     using System;
     using Newtonsoft.Json;
-    using NodesTask.Models.Exceptions;
     using NodesTask.Interfaces;
 
     public class ExceptionHandlingMiddleware
@@ -42,28 +41,14 @@
             var exceptionType = exception.GetType().Name;
             var responseContent = string.Empty;
 
-            if (exception is SecureException secureException)
-            {
-                var journal = await serviceManager.ExceptionJournalService.LogExceptionAsync(exceptionType, queryParams, bodyParams, stackTrace);
+            var journal = await serviceManager.ExceptionJournalService.LogExceptionAsync(exceptionType, queryParams, bodyParams, stackTrace);
 
-                responseContent = JsonConvert.SerializeObject(new
-                {
-                    type = "Secure",
-                    id = journal.EventId,
-                    data = new { message = secureException.Message }
-                });
-            }
-            else
+            responseContent = JsonConvert.SerializeObject(new
             {
-                var journal = await serviceManager.ExceptionJournalService.LogExceptionAsync("Exception", queryParams, bodyParams, stackTrace);
-
-                responseContent = JsonConvert.SerializeObject(new
-                {
-                    type = "Exception",
-                    id = journal.EventId,
-                    data = new { message = $"Internal server error ID = {journal.EventId}" }
-                });
-            }
+                type = exceptionType,
+                id = journal.EventId,
+                data = new { message = exception.Message }
+            });
 
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
